@@ -1,18 +1,17 @@
 import { Const } from './const';
-import { Component, ViewEncapsulation } from "@angular/core";
-import Move from "./components/move";
-import { cpus } from "os";
+import { Component, ViewEncapsulation } from '@angular/core';
+import Move from './components/move';
 
 @Component({
-  selector: "app-root",
-  templateUrl: "./app.component.html",
-  styleUrls: ["./app.component.scss"],
+  selector: 'app-root',
+  templateUrl: './app.component.html',
+  styleUrls: ['./app.component.scss'],
   encapsulation: ViewEncapsulation.None
 })
 export class AppComponent {
   apponentBranches = [];
   board: Array<any> = [];
-  cols: Array<string> = ["A", "B", "C", "D", "E", "F", "G", "H"];
+  cols: Array<string> = Const.COL_NAMES;
 
   constructor() {
     // Initialize the board
@@ -22,7 +21,7 @@ export class AppComponent {
   public initBoard() {
     this.cols.map(element => {
       for (let i = 1; i < 9; i++) {
-        const vector = { col: element, row: i, status: "empty" };
+        const vector = { col: element, row: i, status: 'empty' };
         this.board.push(vector);
       }
     });
@@ -30,43 +29,43 @@ export class AppComponent {
     /// add starter stones
     this.board.map(square => {
       if (
-        (square.col === "D" && square.row === 4) ||
-        (square.col === "E" && square.row === 5)
+        (square.col === 'D' && square.row === 4) ||
+        (square.col === 'E' && square.row === 5)
       ) {
-        square.status = "white";
+        square.status = 'white';
       }
       if (
-        (square.col === "D" && square.row === 5) ||
-        (square.col === "E" && square.row === 4)
+        (square.col === 'D' && square.row === 5) ||
+        (square.col === 'E' && square.row === 4)
       ) {
-        square.status = "black";
+        square.status = 'black';
       }
 
       if (
-        (square.col === "A" && square.row === 4) ||
-        (square.col === "A" && square.row === 5)
+        (square.col === 'A' && square.row === 4) ||
+        (square.col === 'A' && square.row === 5)
       ) {
-        square.status = "white";
+        square.status = 'white';
       }
 
-      if (square.col === "A" && square.row === 3) {
-        square.status = "black";
+      if (square.col === 'A' && square.row === 3) {
+        square.status = 'black';
       }
 
-      if (square.col === "H" && square.row === 1) {
-        square.status = "black";
+      if (square.col === 'H' && square.row === 1) {
+        square.status = 'black';
       }
 
-      if (square.col === "F" && square.row === 3) {
-        square.status = "white";
+      if (square.col === 'F' && square.row === 3) {
+        square.status = 'white';
       }
 
-      if (square.col === "D" && square.row === 3) {
-        square.status = "white";
+      if (square.col === 'D' && square.row === 3) {
+        square.status = 'white';
       }
 
-      if (square.col === "C" && square.row === 6) {
-        square.status = "white";
+      if (square.col === 'C' && square.row === 6) {
+        square.status = 'white';
       }
 
       if (square.col === 'F' && square.row === 6) {
@@ -77,10 +76,10 @@ export class AppComponent {
         square.status = 'black';
       }
 
-      if (square.col === 'G' && square.row === 4) {
-        square.status = 'white';
-      }
-      
+      // if (square.col === 'G' && square.row === 4) {
+      //   square.status = 'white';
+      // }
+
       // if (square.col === 'H' && square.row === 5) {
       //   square.status = 'white';
       // }
@@ -90,7 +89,7 @@ export class AppComponent {
   }
 
   public squareClicked(col: string, row: string) {
-    console.log(col + row);
+    // console.log(col + row);
     this.setStone(col, row, 'black');
   }
 
@@ -102,7 +101,6 @@ export class AppComponent {
         square.status === 'empty'
       ) {
         square.status = color;
-        console.log('square.status ' + square.status);
       }
     });
   }
@@ -122,10 +120,10 @@ export class AppComponent {
   }
 
   public calculateValidMoves() {
-    // this.scanForVerticalLines();
-    // this.scanForHorizontalLines();
-    // this.scanForDiagonalLinesTRtoBL();
-    this.scanForDiagonalLinesTLtoBR();
+     this.scanForVerticalLines();
+     this.scanForHorizontalLines();
+     this.scanForDiagonalLinesTRtoBL();
+     this.scanForDiagonalLinesTLtoBR();
   }
 
 
@@ -142,8 +140,6 @@ export class AppComponent {
         });
 
         this.sequenceIndentifier(item, square, sequences);
-
-        console.log('sequences ' + sequences);
       });
     }
 
@@ -166,6 +162,10 @@ export class AppComponent {
     if (item.status === 'empty') {
       temp.push({status: 'e', item: square});
     }
+
+    if (item.status === 'valid') {
+      temp.push({status: 'v', item: square});
+    }
   }
 
   private analyzeSeqAndSetValidMarker(sequences: any[]) {
@@ -173,12 +173,7 @@ export class AppComponent {
       let temp = [];
       let pastMinReq = false;
       for (let z = 0; z < sequences.length; z++) {
-        if (sequences[z - 1] !== undefined
-          && sequences[z - 1].status === 'e'
-          && sequences[z].status === 'e') {
-          continue;
-        }
-        if (sequences[z].status === 'e') {
+        if (sequences[z].status === 'e' || sequences[z].status === 'v') {
           if (pastMinReq) {
 
             const stone = this.board.filter(val => {
@@ -187,6 +182,7 @@ export class AppComponent {
 
             stone[0].status = 'valid';
             pastMinReq = false;
+
           }
           temp = [];
         } else {
@@ -202,7 +198,7 @@ export class AppComponent {
       temp = [];
 
       for (let q = sequences.length - 1; q > -1; q--) {
-        if (sequences[q].status === 'e') {
+        if (sequences[q].status === 'e' || sequences[q].status === 'v') {
           if (pastMinReq) {
             const stone = this.board.filter(val => {
               return val.col === sequences[q].item.col && val.row === sequences[q].item.row ? true : false;
