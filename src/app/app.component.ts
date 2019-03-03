@@ -12,7 +12,7 @@ export class AppComponent {
   apponentBranches = [];
   board: Array<any> = [];
   cols: Array<string> = Const.COL_NAMES;
-  currentPlayer = 'white';
+  currentPlayer = 'w';
 
   constructor() {
     // Initialize the board
@@ -65,9 +65,9 @@ export class AppComponent {
         square.status = 'white';
       }
 
-      if (square.col === 'C' && square.row === 6) {
-        square.status = 'white';
-      }
+      // if (square.col === 'C' && square.row === 6) {
+      //   square.status = 'white';
+      // }
 
       if (square.col === 'F' && square.row === 6) {
         square.status = 'black';
@@ -121,17 +121,17 @@ export class AppComponent {
   }
 
   public calculateValidMoves() {
-     this.scanForVerticalLines();
-     this.scanForHorizontalLines();
-     this.scanForDiagonalLinesTRtoBL();
-     this.scanForDiagonalLinesTLtoBR();
+    this.scanForVerticalLines();
+    this.scanForHorizontalLines();
+    this.scanForDiagonalLinesTRtoBL();
+    this.scanForDiagonalLinesTLtoBR();
   }
 
   public getInActivePlayerColour() {
-    if (this.currentPlayer === 'white') {
-      return 'black';
+    if (this.currentPlayer === 'w') {
+      return 'b';
     } else {
-      return 'white';
+      return 'w';
     }
   }
 
@@ -179,7 +179,7 @@ export class AppComponent {
   private analyzeSeqAndSetValidMarker(sequences: any[]) {
     if (sequences.length > 1) {
       let keySeq = 'b,w';
-      if (this.currentPlayer === 'white') {
+      if (this.currentPlayer === 'w') {
         keySeq = 'w,b';
       }
       let temp = [];
