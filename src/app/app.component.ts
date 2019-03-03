@@ -12,6 +12,7 @@ export class AppComponent {
   apponentBranches = [];
   board: Array<any> = [];
   cols: Array<string> = Const.COL_NAMES;
+  currentPlayer = 'white';
 
   constructor() {
     // Initialize the board
@@ -126,8 +127,15 @@ export class AppComponent {
      this.scanForDiagonalLinesTLtoBR();
   }
 
+  public getInActivePlayerColour() {
+    if (this.currentPlayer === 'white') {
+      return 'black';
+    } else {
+      return 'white';
+    }
+  }
 
-  private scanForDiagonalLinesTLtoBR(color = 'white') {
+  private scanForDiagonalLinesTLtoBR() {
 
     const masterListOfDiags: Array<any> = Const.DIAG_TL_BR;
 
@@ -170,6 +178,10 @@ export class AppComponent {
 
   private analyzeSeqAndSetValidMarker(sequences: any[]) {
     if (sequences.length > 1) {
+      let keySeq = 'b,w';
+      if (this.currentPlayer === 'white') {
+        keySeq = 'w,b';
+      }
       let temp = [];
       let pastMinReq = false;
       for (let z = 0; z < sequences.length; z++) {
@@ -188,7 +200,7 @@ export class AppComponent {
         } else {
           temp.push(sequences[z].status);
           const flat = temp.toString();
-          if (flat.indexOf('b,w') > -1) {
+          if (flat.indexOf(keySeq) > -1) {
             pastMinReq = true;
           }
         }
@@ -211,7 +223,7 @@ export class AppComponent {
         } else {
           temp.push(sequences[q].status);
           const flat = temp.toString();
-          if (flat.indexOf('b,w') > -1) {
+          if (flat.indexOf(keySeq) > -1) {
             pastMinReq = true;
           }
         }
@@ -219,7 +231,7 @@ export class AppComponent {
     }
   }
 
-  private scanForDiagonalLinesTRtoBL(color = 'white') {
+  private scanForDiagonalLinesTRtoBL() {
 
     const masterListOfDiags: Array<any> = Const.DIAG_TR_BL;
 
@@ -238,7 +250,7 @@ export class AppComponent {
     this.analyzeSeqAndSetValidMarker(sequences);
   }
 
-  private scanForHorizontalLines(color = 'white') {
+  private scanForHorizontalLines() {
     let sequence = [];
     for (let r = 1; r < 9; r++) {
       let row = [];
@@ -271,7 +283,7 @@ export class AppComponent {
     }
   }
 
-  private scanForVerticalLines(color = 'white') {
+  private scanForVerticalLines() {
 
     this.cols.forEach(col => {
       let columns = [];
