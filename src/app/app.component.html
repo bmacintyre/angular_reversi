@@ -1,0 +1,24 @@
+<div class="content">
+    <div class="col1">
+
+    </div>
+    <div class="col2">
+        <div class="title">Bruce's Reversi</div>
+        <div class="board">
+            <div class="row" *ngFor="let z of cols; let i = index">
+              <div class="cols" *ngFor="let col of cols">
+                <div class="intersect" [attr.id]="col + (i +1)" (click)="squareClicked(col,i+1)">
+                  <div class="stoneWhite" *ngIf="getStoneColor(col,i+1) === 'white' ? true : false"></div>
+                  <div class="stoneBlack" *ngIf="getStoneColor(col,i+1) === 'black' ? true : false"></div>
+                  <div class="stoneMarker" *ngIf="getStoneColor(col,i+1) === 'valid' ? true : false"></div>
+                </div>
+              </div>
+            </div>
+        </div>
+    </div>
+    <div class="col3">
+    
+      </div>
+   
+  </div>
+  
