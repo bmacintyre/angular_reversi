@@ -9,7 +9,7 @@ import Move from './components/move';
   encapsulation: ViewEncapsulation.None
 })
 export class AppComponent {
-  apponentBranches = [];
+
   board: Array<any> = [];
   cols: Array<string> = Const.COL_NAMES;
   currentPlayer = 'w';
@@ -43,13 +43,14 @@ export class AppComponent {
       }
 
       if (
-        (square.col === 'A' && square.row === 4) ||
-        (square.col === 'A' && square.row === 5)
-      ) {
+        (square.col === 'A' && square.row === 6)
+        || (square.col === 'A' && square.row === 1)) {
         square.status = 'white';
       }
 
-      if (square.col === 'A' && square.row === 3) {
+      if (square.col === 'A' && square.row === 4 ||
+        (square.col === 'A' && square.row === 5) ||
+        (square.col === 'A' && square.row === 2)) {
         square.status = 'black';
       }
 
@@ -154,47 +155,45 @@ export class AppComponent {
     this.analyzeSeqAndSetValidMarker(sequences);
   }
 
-  private sequenceIndentifier(item: any, square: any, temp: any[]) {
+  private sequenceIndentifier(item: any, square: any, arrayToFill: any[]) {
 
     if (item[0] !== undefined) {
       item = item[0];
     }
 
     if (item.status === 'black') {
-      temp.push({status: 'b', item: square});
+      arrayToFill.push({status: 'b', item: square});
     }
     if (item.status === 'white') {
-      temp.push({status: 'w', item: square});
+      arrayToFill.push({status: 'w', item: square});
     }
 
     if (item.status === 'empty') {
-      temp.push({status: 'e', item: square});
+      arrayToFill.push({status: 'e', item: square});
     }
 
     if (item.status === 'valid') {
-      temp.push({status: 'v', item: square});
+      arrayToFill.push({status: 'v', item: square});
     }
   }
 
-  private analyzeSeqAndSetValidMarker(sequences: any[]) {
+  private analyzeSeqAndSetValidMarker(sequences: any[], validate = false) {
     if (sequences.length > 1) {
       let keySeq = 'b,w';
       if (this.currentPlayer === 'w') {
         keySeq = 'w,b';
       }
       let temp = [];
+      let seqStones = [];
       let pastMinReq = false;
       for (let z = 0; z < sequences.length; z++) {
         if (sequences[z].status === 'e' || sequences[z].status === 'v') {
           if (pastMinReq) {
 
-            const stone = this.board.filter(val => {
-              return val.col === sequences[z].item.col && val.row === sequences[z].item.row ? true : false;
-            });
+            const stone = this.getStoneByPosition(sequences[z].item.col, sequences[z].item.row);
+            stone.status = 'valid';
 
-            stone[0].status = 'valid';
             pastMinReq = false;
-
           }
           temp = [];
         } else {
@@ -208,29 +207,40 @@ export class AppComponent {
 
       pastMinReq = false;
       temp = [];
+      seqStones = [];
 
       for (let q = sequences.length - 1; q > -1; q--) {
         if (sequences[q].status === 'e' || sequences[q].status === 'v') {
           if (pastMinReq) {
-            const stone = this.board.filter(val => {
-              return val.col === sequences[q].item.col && val.row === sequences[q].item.row ? true : false;
-            });
-
-            stone[0].status = 'valid';
+            const stone = this.getStoneByPosition(sequences[q].item.col, sequences[q].item.row);
+            stone.status = 'valid';
             pastMinReq = false;
           }
           temp = [];
         } else {
+
           temp.push(sequences[q].status);
+
           const flat = temp.toString();
           if (flat.indexOf(keySeq) > -1) {
             pastMinReq = true;
+            if (validate) {
+              const stone = this.getStoneByPosition(sequences[q].item.col, sequences[q].item.row);
+              stone.status = this.currentPlayer === 'w' ? 'white' : 'black';
+            }
           }
         }
       }
     }
   }
 
+  private getStoneByPosition(col, row):any {
+    const stone = this.board.filter(val => {
+      return val.col === col && val.row === row ? true : false;
+    });
+
+    return stone[0];
+  }
   private scanForDiagonalLinesTRtoBL() {
 
     const masterListOfDiags: Array<any> = Const.DIAG_TR_BL;
@@ -250,7 +260,7 @@ export class AppComponent {
     this.analyzeSeqAndSetValidMarker(sequences);
   }
 
-  private scanForHorizontalLines() {
+  private scanForHorizontalLines(validate = false, stone: any = null) {
     let sequence = [];
     for (let r = 1; r < 9; r++) {
       let row = [];
@@ -270,7 +280,11 @@ export class AppComponent {
 
       });
 
-      this.analyzeSeqAndSetValidMarker(sequence);
+      if (!!stone) {
+        validate = this.inArray(stone, row);
+      }
+
+      this.analyzeSeqAndSetValidMarker(sequence, validate);
 
       /// Left to Right
       sequence = [];
@@ -278,12 +292,25 @@ export class AppComponent {
         this.sequenceIndentifier(square, square, sequence);
       });
 
-      this.analyzeSeqAndSetValidMarker(sequence);
-
+      this.analyzeSeqAndSetValidMarker(sequence, validate);
     }
   }
 
-  private scanForVerticalLines() {
+  private inArray(value: any, list: any[]): boolean {
+
+    let found = false;
+    for (let i = 0; i < list.length - 1; i++)
+    {
+      const element = list[i];
+      if (element.col === value.col && element.row === value.row) {
+        found = true;
+      }
+    }
+
+    return found;
+  }
+
+  private scanForVerticalLines(validate = false, stone: any = null) {
 
     this.cols.forEach(col => {
       let columns = [];
@@ -298,10 +325,17 @@ export class AppComponent {
       let sequence = [];
       for (let t = columns.length - 1; t > -1; t--) {
         const square = columns[t];
+
         this.sequenceIndentifier(square, square, sequence);
       }
 
-      this.analyzeSeqAndSetValidMarker(sequence);
+      if (columns.indexOf(stone) > -1 && validate === true) {
+        validate = true;
+      } else {
+        validate = false;
+      }
+
+      this.analyzeSeqAndSetValidMarker(sequence, validate);
 
 
       /// Top down scan
@@ -310,12 +344,35 @@ export class AppComponent {
         this.sequenceIndentifier(square, square, sequence);
       });
 
-      this.analyzeSeqAndSetValidMarker(sequence);
+      if (columns.indexOf(stone) > -1 && validate === true) {
+        validate = true;
+      } else {
+        validate = false;
+      }
+
+      this.analyzeSeqAndSetValidMarker(sequence, validate);
 
     });
   }
 
-  private getColumnIndex(letter: string) {
-    return this.cols.indexOf(letter);
+  public validMarkerClicked(col: any, row: number) {
+
+    console.log('validMarkerClicked col : ' + col + ' row: ' + row);
+    const stone = this.getStoneByPosition(col, row);
+    stone.status = this.currentPlayer === 'w' ? 'white' : 'black';
+
+    const finalHotList = [];
+
+    // find col row in seach of scan lines
+    // when found run sequence check from marker point
+    // in both direct allowed on that scan line
+    // keep track on intermediary opposites along path 
+    // till stone of current player color is found
+
+    console.log(finalHotList);
+    this.scanForVerticalLines(true, stone);
+    this.scanForHorizontalLines(true, stone);
+    // this.scanForDiagonalLinesTRtoBL('validate');
+    // this.scanForDiagonalLinesTLtoBR('validate');
   }
 }
