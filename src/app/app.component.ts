@@ -78,13 +78,13 @@ export class AppComponent {
         square.status = 'black';
       }
 
-      // if (square.col === 'G' && square.row === 4) {
-      //   square.status = 'white';
-      // }
+      if (square.col === 'B' && square.row === 3) {
+        square.status = 'black';
+      }
 
-      // if (square.col === 'H' && square.row === 5) {
-      //   square.status = 'white';
-      // }
+      if (square.col === 'C' && square.row === 3) {
+        square.status = 'black';
+      }
     });
 
     this.calculateValidMoves();
@@ -122,10 +122,21 @@ export class AppComponent {
   }
 
   public calculateValidMoves() {
+
+
     this.scanForVerticalLines();
     this.scanForHorizontalLines();
     this.scanForDiagonalLinesTRtoBL();
     this.scanForDiagonalLinesTLtoBR();
+  }
+
+  public clearValidMarkers() {
+    this.board.map(item => {
+        if (item.status === 'valid') {
+          item.status = 'empty';
+        }
+        return item;
+    });
   }
 
   public getInActivePlayerColour() {
@@ -134,25 +145,6 @@ export class AppComponent {
     } else {
       return 'w';
     }
-  }
-
-  private scanForDiagonalLinesTLtoBR() {
-
-    const masterListOfDiags: Array<any> = Const.DIAG_TL_BR;
-
-    const sequences = [];
-    for (let m = 0; m < masterListOfDiags.length; m++) {
-      masterListOfDiags[m].forEach(square => {
-
-        const item = this.board.filter(val => {
-            return val.col === square.col && val.row === square.row ? true : false;
-        });
-
-        this.sequenceIndentifier(item, square, sequences);
-      });
-    }
-
-    this.analyzeSeqAndSetValidMarker(sequences);
   }
 
   private sequenceIndentifier(item: any, square: any, arrayToFill: any[]) {
@@ -177,14 +169,13 @@ export class AppComponent {
     }
   }
 
-  private analyzeSeqAndSetValidMarker(sequences: any[], validate = false) {
+  private analyzeSeqAndSetValidMarker(sequences: any[]) {
     if (sequences.length > 1) {
       let keySeq = 'b,w';
       if (this.currentPlayer === 'w') {
         keySeq = 'w,b';
       }
       let temp = [];
-      let seqStones = [];
       let pastMinReq = false;
       for (let z = 0; z < sequences.length; z++) {
         if (sequences[z].status === 'e' || sequences[z].status === 'v') {
@@ -207,7 +198,6 @@ export class AppComponent {
 
       pastMinReq = false;
       temp = [];
-      seqStones = [];
 
       for (let q = sequences.length - 1; q > -1; q--) {
         if (sequences[q].status === 'e' || sequences[q].status === 'v') {
@@ -224,75 +214,50 @@ export class AppComponent {
           const flat = temp.toString();
           if (flat.indexOf(keySeq) > -1) {
             pastMinReq = true;
-            if (validate) {
-              const stone = this.getStoneByPosition(sequences[q].item.col, sequences[q].item.row);
-              stone.status = this.currentPlayer === 'w' ? 'white' : 'black';
-            }
           }
         }
       }
     }
   }
 
-  private getStoneByPosition(col, row):any {
-    const stone = this.board.filter(val => {
-      return val.col === col && val.row === row ? true : false;
-    });
+  private executeMovesOnSingleLine(sequences: any[], stone: any) {
+    if (sequences.length > 1) {
 
-    return stone[0];
-  }
-  private scanForDiagonalLinesTRtoBL() {
+      let changeFlag = false;
+      for (let z = 0; z < sequences.length; z++) {
 
-    const masterListOfDiags: Array<any> = Const.DIAG_TR_BL;
-
-    const sequences = [];
-    for (let m = 0; m < masterListOfDiags.length; m++) {
-      masterListOfDiags[m].forEach(square => {
-
-        const item = this.board.filter(val => {
-            return val.col === square.col && val.row === square.row ? true : false;
-        });
-
-        this.sequenceIndentifier(item[0], square, sequences);
-      });
-    }
-
-    this.analyzeSeqAndSetValidMarker(sequences);
-  }
-
-  private scanForHorizontalLines(validate = false, stone: any = null) {
-    let sequence = [];
-    for (let r = 1; r < 9; r++) {
-      let row = [];
-      row = this.board.filter(square => {
-        if (square.row === r) {
-          return true;
-        }
-      });
-
-      this.cols.forEach(col => {
-
-        // Right to Left
-        for (let t = row.length - 1; t > -1; t--) {
-            const square = row[t];
-            this.sequenceIndentifier(square, square, sequence);
+          const squareContent = this.getStoneByPosition(sequences[z].item.col, sequences[z].item.row);
+          if (squareContent === stone
+            && sequences[z - 2] !== undefined
+            && sequences[z - 2].item.status !== 'empty'
+            && sequences[z - 2].item.status !== 'valid') {
+            changeFlag = true;
+            continue;
           }
 
-      });
+          if (squareContent === stone
+            && sequences[z + 2] !== undefined
+            && sequences[z + 2].item.status !== 'empty'
+            && sequences[z + 2].item.status !== 'valid') {
+            changeFlag = true;
+            continue;
+          }
 
-      if (!!stone) {
-        validate = this.inArray(stone, row);
+
+          if (changeFlag === true && squareContent.status === this.getOppositePlayer()) {
+            squareContent.status = this.currentPlayer === 'w' ? 'white' : 'black';
+          } else {
+            changeFlag = false;
+          }
       }
+    }
+  }
 
-      this.analyzeSeqAndSetValidMarker(sequence, validate);
-
-      /// Left to Right
-      sequence = [];
-      row.forEach(square => {
-        this.sequenceIndentifier(square, square, sequence);
-      });
-
-      this.analyzeSeqAndSetValidMarker(sequence, validate);
+  private getOppositePlayer(): string {
+    if (this.currentPlayer === 'w') {
+      return 'black';
+    } else {
+      return 'black';
     }
   }
 
@@ -308,6 +273,116 @@ export class AppComponent {
     }
 
     return found;
+  }
+
+  private getStoneByPosition(col, row):any {
+    const stone = this.board.filter(val => {
+      return val.col === col && val.row === row ? true : false;
+    });
+
+    return stone[0];
+  }
+
+  ////////////////////////////////////////////////////////////
+  // Directional scanning
+
+  private scanForDiagonalLinesTLtoBR(validate = false, stone: any = null) {
+
+    const masterListOfDiags: Array<any> = Const.DIAG_TL_BR;
+
+    let sequence = [];
+    for (let m = 0; m < masterListOfDiags.length; m++) {
+      masterListOfDiags[m].forEach(square => {
+
+        const item = this.board.filter(val => {
+            return val.col === square.col && val.row === square.row ? true : false;
+        });
+
+        this.sequenceIndentifier(item, square, sequence);
+      });
+
+      if (!!stone) {
+        validate = this.inArray(stone, masterListOfDiags[m]);
+      }
+
+      if (validate) {
+        this.executeMovesOnSingleLine(sequence, stone);
+      } else {
+        this.analyzeSeqAndSetValidMarker(sequence);
+      }
+
+      sequence = [];
+    }
+  }
+
+  private scanForDiagonalLinesTRtoBL(validate = false, stone: any = null) {
+
+    const masterListOfDiags: Array<any> = Const.DIAG_TR_BL;
+
+    let sequence = [];
+    for (let m = 0; m < masterListOfDiags.length; m++) {
+      masterListOfDiags[m].forEach(square => {
+
+        const item = this.board.filter(val => {
+            return val.col === square.col && val.row === square.row ? true : false;
+        });
+
+        this.sequenceIndentifier(item[0], square, sequence);
+      });
+
+      if (!!stone) {
+        validate = this.inArray(stone, masterListOfDiags[m]);
+      }
+
+      if (validate) {
+        this.executeMovesOnSingleLine(sequence, stone);
+      } else {
+        this.analyzeSeqAndSetValidMarker(sequence);
+      }
+
+      sequence = [];
+    }
+  }
+
+  private scanForHorizontalLines(validate = false, stone: any = null) {
+    let sequence = [];
+    for (let r = 1; r < 9; r++) {
+      let row = [];
+      row = this.board.filter(square => {
+        if (square.row === r) {
+          return true;
+        }
+      });
+
+      // Right to Left
+      sequence = [];
+      for (let t = row.length - 1; t > -1; t--) {
+          const square = row[t];
+          this.sequenceIndentifier(square, square, sequence);
+      }
+
+      if (!!stone) {
+        validate = this.inArray(stone, row);
+      }
+
+      if (validate) {
+        this.executeMovesOnSingleLine(sequence, stone);
+      } else {
+        this.analyzeSeqAndSetValidMarker(sequence);
+      }
+
+      /// Left to Right
+      sequence = [];
+      row.forEach(square => {
+        this.sequenceIndentifier(square, square, sequence);
+      });
+
+      if (validate) {
+        this.executeMovesOnSingleLine(sequence, stone);
+      } else {
+        this.analyzeSeqAndSetValidMarker(sequence);
+      }
+    }
   }
 
   private scanForVerticalLines(validate = false, stone: any = null) {
@@ -329,13 +404,15 @@ export class AppComponent {
         this.sequenceIndentifier(square, square, sequence);
       }
 
-      if (columns.indexOf(stone) > -1 && validate === true) {
-        validate = true;
-      } else {
-        validate = false;
+      if (!!stone) {
+        validate = this.inArray(stone, columns);
       }
 
-      this.analyzeSeqAndSetValidMarker(sequence, validate);
+      if (validate) {
+        this.executeMovesOnSingleLine(sequence, stone);
+      } else {
+        this.analyzeSeqAndSetValidMarker(sequence);
+      }
 
 
       /// Top down scan
@@ -350,7 +427,11 @@ export class AppComponent {
         validate = false;
       }
 
-      this.analyzeSeqAndSetValidMarker(sequence, validate);
+      if (validate) {
+        this.executeMovesOnSingleLine(sequence, stone);
+      } else {
+        this.analyzeSeqAndSetValidMarker(sequence);
+      }
 
     });
   }
@@ -359,20 +440,15 @@ export class AppComponent {
 
     console.log('validMarkerClicked col : ' + col + ' row: ' + row);
     const stone = this.getStoneByPosition(col, row);
-    stone.status = this.currentPlayer === 'w' ? 'white' : 'black';
 
-    const finalHotList = [];
-
-    // find col row in seach of scan lines
-    // when found run sequence check from marker point
-    // in both direct allowed on that scan line
-    // keep track on intermediary opposites along path 
-    // till stone of current player color is found
-
-    console.log(finalHotList);
     this.scanForVerticalLines(true, stone);
     this.scanForHorizontalLines(true, stone);
-    // this.scanForDiagonalLinesTRtoBL('validate');
-    // this.scanForDiagonalLinesTLtoBR('validate');
+   this.scanForDiagonalLinesTRtoBL(true, stone);
+   this.scanForDiagonalLinesTLtoBR(true, stone);
+
+    stone.status = this.currentPlayer === 'w' ? 'white' : 'black';
+
+    this.clearValidMarkers();
+    this.calculateValidMoves();
   }
 }
