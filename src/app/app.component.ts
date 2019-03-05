@@ -12,7 +12,7 @@ export class AppComponent {
 
   board: Array<any> = [];
   cols: Array<string> = Const.COL_NAMES;
-  currentPlayer = 'w';
+  currentPlayer = 'b';
 
   constructor() {
     // Initialize the board
@@ -66,9 +66,9 @@ export class AppComponent {
         square.status = 'white';
       }
 
-      // if (square.col === 'C' && square.row === 6) {
-      //   square.status = 'white';
-      // }
+      if (square.col === 'B' && square.row === 2) {
+        square.status = 'white';
+      }
 
       if (square.col === 'F' && square.row === 6) {
         square.status = 'black';
@@ -122,7 +122,6 @@ export class AppComponent {
   }
 
   public calculateValidMoves() {
-
 
     this.scanForVerticalLines();
     this.scanForHorizontalLines();
@@ -227,13 +226,6 @@ export class AppComponent {
       for (let z = 0; z < sequences.length; z++) {
 
           const squareContent = this.getStoneByPosition(sequences[z].item.col, sequences[z].item.row);
-          if (squareContent === stone
-            && sequences[z - 2] !== undefined
-            && sequences[z - 2].item.status !== 'empty'
-            && sequences[z - 2].item.status !== 'valid') {
-            changeFlag = true;
-            continue;
-          }
 
           if (squareContent === stone
             && sequences[z + 2] !== undefined
@@ -246,6 +238,7 @@ export class AppComponent {
 
           if (changeFlag === true && squareContent.status === this.getOppositePlayer()) {
             squareContent.status = this.currentPlayer === 'w' ? 'white' : 'black';
+            changeFlag = false;
           } else {
             changeFlag = false;
           }
@@ -257,7 +250,7 @@ export class AppComponent {
     if (this.currentPlayer === 'w') {
       return 'black';
     } else {
-      return 'black';
+      return 'white';
     }
   }
 
@@ -307,6 +300,11 @@ export class AppComponent {
 
       if (validate) {
         this.executeMovesOnSingleLine(sequence, stone);
+
+        // reverse scan
+        sequence = sequence.reverse();
+        this.executeMovesOnSingleLine(sequence, stone);
+
       } else {
         this.analyzeSeqAndSetValidMarker(sequence);
       }
@@ -336,6 +334,11 @@ export class AppComponent {
 
       if (validate) {
         this.executeMovesOnSingleLine(sequence, stone);
+
+        // reverse scan
+        sequence = sequence.reverse();
+        this.executeMovesOnSingleLine(sequence, stone);
+
       } else {
         this.analyzeSeqAndSetValidMarker(sequence);
       }
@@ -443,8 +446,8 @@ export class AppComponent {
 
     this.scanForVerticalLines(true, stone);
     this.scanForHorizontalLines(true, stone);
-   this.scanForDiagonalLinesTRtoBL(true, stone);
-   this.scanForDiagonalLinesTLtoBR(true, stone);
+    this.scanForDiagonalLinesTRtoBL(true, stone);
+    this.scanForDiagonalLinesTLtoBR(true, stone);
 
     stone.status = this.currentPlayer === 'w' ? 'white' : 'black';
 
