@@ -42,49 +42,49 @@ export class AppComponent {
         square.status = 'black';
       }
 
-      if (
-        (square.col === 'A' && square.row === 6)
-        || (square.col === 'A' && square.row === 1)) {
-        square.status = 'white';
-      }
+      // if (
+      //   (square.col === 'C' && square.row === 5)
+      //   || (square.col === 'E' && square.row === 5)) {
+      //   square.status = 'black';
+      // }
 
-      if (square.col === 'A' && square.row === 4 ||
-        (square.col === 'A' && square.row === 5) ||
-        (square.col === 'A' && square.row === 2)) {
-        square.status = 'black';
-      }
+      // if (square.col === 'D' && square.row === 6 ||
+      //   (square.col === 'E' && square.row === 6) ||
+      //   (square.col === 'F' && square.row === 6)) {
+      //   square.status = 'white';
+      // }
 
-      if (square.col === 'H' && square.row === 1) {
-        square.status = 'black';
-      }
+      // if (square.col === 'C' && square.row === 4) {
+      //   square.status = 'black';
+      // }
 
-      if (square.col === 'F' && square.row === 3) {
-        square.status = 'white';
-      }
+      // if (square.col === 'B' && square.row === 5) {
+      //   square.status = 'black';
+      // }
 
-      if (square.col === 'D' && square.row === 3) {
-        square.status = 'white';
-      }
+      // if (square.col === 'D' && square.row === 7) {
+      //   square.status = 'white';
+      // }
 
-      if (square.col === 'B' && square.row === 2) {
-        square.status = 'white';
-      }
+      // if (square.col === 'B' && square.row === 2) {
+      //   square.status = 'white';
+      // }
 
-      if (square.col === 'F' && square.row === 6) {
-        square.status = 'black';
-      }
+      // if (square.col === 'F' && square.row === 6) {
+      //   square.status = 'black';
+      // }
 
-      if (square.col === 'E' && square.row === 2) {
-        square.status = 'black';
-      }
+      // if (square.col === 'E' && square.row === 2) {
+      //   square.status = 'black';
+      // }
 
-      if (square.col === 'B' && square.row === 3) {
-        square.status = 'black';
-      }
+      // if (square.col === 'B' && square.row === 3) {
+      //   square.status = 'black';
+      // }
 
-      if (square.col === 'C' && square.row === 3) {
-        square.status = 'black';
-      }
+      // if (square.col === 'C' && square.row === 3) {
+      //   square.status = 'black';
+      // }
     });
 
     this.calculateValidMoves();
@@ -125,8 +125,8 @@ export class AppComponent {
 
     this.scanForVerticalLines();
     this.scanForHorizontalLines();
-    this.scanForDiagonalLinesTRtoBL();
-    this.scanForDiagonalLinesTLtoBR();
+    // this.scanForDiagonalLinesTRtoBL();
+    // this.scanForDiagonalLinesTLtoBR();
   }
 
   public clearValidMarkers() {
@@ -181,6 +181,9 @@ export class AppComponent {
           if (pastMinReq) {
 
             const stone = this.getStoneByPosition(sequences[z].item.col, sequences[z].item.row);
+            if (sequences[z - 1] !== undefined &&  sequences[z - 1].status === (this.currentPlayer === 'w' ? 'white' : 'black')) {
+              continue;
+            }
             stone.status = 'valid';
 
             pastMinReq = false;
@@ -202,6 +205,9 @@ export class AppComponent {
         if (sequences[q].status === 'e' || sequences[q].status === 'v') {
           if (pastMinReq) {
             const stone = this.getStoneByPosition(sequences[q].item.col, sequences[q].item.row);
+            if (sequences[q + 1] !== undefined && sequences[q + 1].status === (this.currentPlayer === 'w' ? 'white' : 'black')) {
+              continue;
+            }
             stone.status = 'valid';
             pastMinReq = false;
           }
@@ -228,18 +234,22 @@ export class AppComponent {
           const squareContent = this.getStoneByPosition(sequences[z].item.col, sequences[z].item.row);
 
           if (squareContent === stone
-            && sequences[z + 2] !== undefined
-            && sequences[z + 2].item.status !== 'empty'
-            && sequences[z + 2].item.status !== 'valid') {
+            && sequences[z + 1] !== undefined
+            && sequences[z + 1].item.status !== 'empty'
+            && sequences[z + 1].item.status !== 'valid') {
             changeFlag = true;
             continue;
           }
 
-
-          if (changeFlag === true && squareContent.status === this.getOppositePlayer()) {
+          if (changeFlag === true
+            && squareContent.status === this.getOppositePlayer()) {
             squareContent.status = this.currentPlayer === 'w' ? 'white' : 'black';
-            changeFlag = false;
-          } else {
+            if (sequences[z + 1] !== undefined && sequences[z + 1].item.status == (this.currentPlayer === 'w' ? 'white' : 'black')) {
+              break;
+            }
+
+          } else if (changeFlag === true && squareContent.status === 'empty'
+          || squareContent.status === 'valid') {
             changeFlag = false;
           }
       }
@@ -257,7 +267,7 @@ export class AppComponent {
   private inArray(value: any, list: any[]): boolean {
 
     let found = false;
-    for (let i = 0; i < list.length - 1; i++)
+    for (let i = 0; i < list.length; i++)
     {
       const element = list[i];
       if (element.col === value.col && element.row === value.row) {
@@ -299,11 +309,23 @@ export class AppComponent {
       }
 
       if (validate) {
-        this.executeMovesOnSingleLine(sequence, stone);
+        let pattern = [];
+        sequence.forEach(element => {
+          pattern.push(element.status);
+        });
+        if (pattern.toString().indexOf('b,w') > -1 || pattern.toString().indexOf('w,b') > -1) {
+          this.executeMovesOnSingleLine(sequence, stone);
+        }
 
         // reverse scan
         sequence = sequence.reverse();
-        this.executeMovesOnSingleLine(sequence, stone);
+        pattern = [];
+        sequence.forEach(element => {
+          pattern.push(element.status);
+        });
+        if (pattern.toString().indexOf('b,w') > -1 || pattern.toString().indexOf('w,b') > -1) {
+          this.executeMovesOnSingleLine(sequence, stone);
+        }
 
       } else {
         this.analyzeSeqAndSetValidMarker(sequence);
@@ -333,11 +355,23 @@ export class AppComponent {
       }
 
       if (validate) {
-        this.executeMovesOnSingleLine(sequence, stone);
+        let pattern = [];
+        sequence.forEach(element => {
+          pattern.push(element.status);
+        });
+        if (pattern.toString().indexOf('b,w') > -1 || pattern.toString().indexOf('w,b') > -1) {
+          this.executeMovesOnSingleLine(sequence, stone);
+        }
 
         // reverse scan
         sequence = sequence.reverse();
-        this.executeMovesOnSingleLine(sequence, stone);
+        pattern = [];
+        sequence.forEach(element => {
+          pattern.push(element.status);
+        });
+        if (pattern.toString().indexOf('b,w') > -1 || pattern.toString().indexOf('w,b') > -1) {
+          this.executeMovesOnSingleLine(sequence, stone);
+        }
 
       } else {
         this.analyzeSeqAndSetValidMarker(sequence);
@@ -369,7 +403,14 @@ export class AppComponent {
       }
 
       if (validate) {
-        this.executeMovesOnSingleLine(sequence, stone);
+        const pattern = [];
+        sequence.forEach(element => {
+          pattern.push(element.status);
+        });
+        if (pattern.toString().indexOf('b,w') > -1 || pattern.toString().indexOf('w,b') > -1) {
+          this.executeMovesOnSingleLine(sequence, stone);
+        }
+
       } else {
         this.analyzeSeqAndSetValidMarker(sequence);
       }
@@ -381,7 +422,13 @@ export class AppComponent {
       });
 
       if (validate) {
-        this.executeMovesOnSingleLine(sequence, stone);
+        const pattern = [];
+        sequence.forEach(element => {
+          pattern.push(element.status);
+        });
+        if (pattern.toString().indexOf('b,w') > -1 || pattern.toString().indexOf('w,b') > -1) {
+          this.executeMovesOnSingleLine(sequence, stone);
+        }
       } else {
         this.analyzeSeqAndSetValidMarker(sequence);
       }
@@ -412,7 +459,13 @@ export class AppComponent {
       }
 
       if (validate) {
-        this.executeMovesOnSingleLine(sequence, stone);
+        const pattern = [];
+        sequence.forEach(element => {
+          pattern.push(element.status);
+        });
+        if (pattern.toString().indexOf('b,w') > -1 || pattern.toString().indexOf('w,b') > -1) {
+          this.executeMovesOnSingleLine(sequence, stone);
+        }
       } else {
         this.analyzeSeqAndSetValidMarker(sequence);
       }
@@ -424,14 +477,18 @@ export class AppComponent {
         this.sequenceIndentifier(square, square, sequence);
       });
 
-      if (columns.indexOf(stone) > -1 && validate === true) {
-        validate = true;
-      } else {
-        validate = false;
+      if (!!stone) {
+        validate = this.inArray(stone, columns);
       }
 
       if (validate) {
-        this.executeMovesOnSingleLine(sequence, stone);
+        const pattern = [];
+        sequence.forEach(element => {
+          pattern.push(element.status);
+        });
+        if (pattern.toString().indexOf('b,w') > -1 || pattern.toString().indexOf('w,b') > -1) {
+          this.executeMovesOnSingleLine(sequence, stone);
+        }
       } else {
         this.analyzeSeqAndSetValidMarker(sequence);
       }
@@ -452,6 +509,37 @@ export class AppComponent {
     stone.status = this.currentPlayer === 'w' ? 'white' : 'black';
 
     this.clearValidMarkers();
+    this.currentPlayer = this.getOppositePlayer().charAt(0);
     this.calculateValidMoves();
+
+    this.executeComputersTurn();
+  }
+
+  private executeComputersTurn() {
+
+    const listOfValidMoves = this.board.filter(item => {
+      return item.status === 'valid' ? true : false;
+    });
+
+    // Small delay before display computer move
+    // so human player doesn't miss it
+    setTimeout(() => {
+      const min = 0;
+      const max = listOfValidMoves.length - 1;
+      const random = Math.floor(Math.random() * Math.floor(max));
+
+      const stone = listOfValidMoves[random];
+      this.scanForVerticalLines(true, stone);
+      this.scanForHorizontalLines(true, stone);
+      this.scanForDiagonalLinesTRtoBL(true, stone);
+      this.scanForDiagonalLinesTLtoBR(true, stone);
+
+      stone.status = 'white';
+
+      this.clearValidMarkers();
+      this.currentPlayer = this.getOppositePlayer().charAt(0);
+      this.calculateValidMoves();
+    }, 1140);
+
   }
 }
