@@ -102,8 +102,8 @@ export class AppComponent {
 
     this.scanForVerticalLines();
     this.scanForHorizontalLines();
-    // this.scanForDiagonalLinesTRtoBL();
-    // this.scanForDiagonalLinesTLtoBR();
+    this.scanForDiagonalLinesTRtoBL();
+    this.scanForDiagonalLinesTLtoBR();
   }
 
   public clearValidMarkers() {
@@ -221,7 +221,7 @@ export class AppComponent {
           if (changeFlag === true
             && squareContent.status === this.getOppositePlayer()) {
             squareContent.status = this.currentPlayer === 'w' ? 'white' : 'black';
-            if (sequences[z + 1] !== undefined && sequences[z + 1].item.status == (this.currentPlayer === 'w' ? 'white' : 'black')) {
+            if (sequences[z + 1] !== undefined && sequences[z + 1].item.status === (this.currentPlayer === 'w' ? 'white' : 'black')) {
               break;
             }
 
@@ -244,8 +244,8 @@ export class AppComponent {
   private inArray(value: any, list: any[]): boolean {
 
     let found = false;
-    for (let i = 0; i < list.length; i++)
-    {
+    // tslint:disable-next-line:prefer-for-of
+    for (let i = 0; i < list.length; i++) {
       const element = list[i];
       if (element.col === value.col && element.row === value.row) {
         found = true;
@@ -255,7 +255,7 @@ export class AppComponent {
     return found;
   }
 
-  private getStoneByPosition(col, row):any {
+  private getStoneByPosition(col, row): any {
     const stone = this.board.filter(val => {
       return val.col === col && val.row === row ? true : false;
     });
@@ -426,6 +426,7 @@ export class AppComponent {
     const masterListOfDiags: Array<any> = Const.DIAG_TL_BR;
 
     let sequence = [];
+    // tslint:disable-next-line:prefer-for-of
     for (let m = 0; m < masterListOfDiags.length; m++) {
       masterListOfDiags[m].forEach(square => {
 
@@ -447,6 +448,7 @@ export class AppComponent {
     const masterListOfDiags: Array<any> = Const.DIAG_TR_BL;
 
     let sequence = [];
+    // tslint:disable-next-line:prefer-for-of
     for (let m = 0; m < masterListOfDiags.length; m++) {
       masterListOfDiags[m].forEach(square => {
 
