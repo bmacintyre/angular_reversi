@@ -1,7 +1,10 @@
 import { Const } from './const';
 import { Component, ViewEncapsulation } from '@angular/core';
-import Move from './components/move';
 import { THIS_EXPR } from '@angular/compiler/src/output/output_ast';
+import { Store } from '@ngrx/store';
+import { PlayerStonesAction, PlayerLossesAction, PlayerWinsAction, PlayerTieAction } from './store/reducers/player.reducer';
+import { EventManager } from '@angular/platform-browser';
+import { ComputerStonesAction, ComputerLossesAction, ComputerWinsAction, ComputerTieAction } from './store/reducers/computer.reducer';
 
 @Component({
   selector: 'app-root',
@@ -25,8 +28,14 @@ export class AppComponent {
   gameStatus = Const.IN_PLAY;
   playAgainShowing = false;
 
-  constructor() {
+  constructor(private store: Store<any>) {
     // Initialize the board
+    this.initBoard();
+
+  }
+
+  public resetBoard($event) {
+    this.board = [];
     this.initBoard();
   }
 
@@ -296,7 +305,7 @@ export class AppComponent {
     if (this.currentPlayer === 'w') {
       return;
     }
-    console.log('validMarkerClicked col : ' + col + ' row: ' + row);
+
     const stone = this.getStoneByPosition(col, row);
 
     this.scanForVerticalLines(true, stone);
@@ -321,13 +330,14 @@ export class AppComponent {
       return stone.status === 'black' ? true : false;
     });
 
-    this.totalPlayerScore = numPlayersStonesOnBoard.length;
-
     const numComputersStonesOnBoard = this.board.filter((stone) => {
       return stone.status === 'white' ? true : false;
     });
 
+    this.totalPlayerScore = numPlayersStonesOnBoard.length;
     this.totalComputerScore = numComputersStonesOnBoard.length;
+    this.store.dispatch(new PlayerStonesAction(numPlayersStonesOnBoard.length));
+    this.store.dispatch(new ComputerStonesAction(numComputersStonesOnBoard.length));
 
   }
 
@@ -389,22 +399,22 @@ export class AppComponent {
       if (this.totalComputerScore > this.totalPlayerScore) {
         this.totalComputerWins++;
         this.totalPlayerLosses++;
+        this.store.dispatch(new PlayerLossesAction(this.totalPlayerLosses));
+        this.store.dispatch(new ComputerWinsAction(this.totalComputerWins));
+
       } else if (this.totalComputerScore < this.totalPlayerScore) {
         this.totalPlayerWins++;
         this.totalComputerLosses++;
+        this.store.dispatch(new PlayerWinsAction(this.totalPlayerWins));
+        this.store.dispatch(new ComputerLossesAction(this.totalComputerLosses));
+
       } else {
         this.totalComputerTies++;
         this.totalPlayerTies++;
-      }
-  }
+        this.store.dispatch(new PlayerTieAction(this.totalPlayerTies));
+        this.store.dispatch(new ComputerTieAction(this.totalComputerTies));
 
-  public playAgainClick() {
-    this.board = [];
-    this.playAgainShowing = false;
-    this.initBoard();
-    this.totalPlayerScore = 2;
-    this.totalComputerScore = 2;
-    this.gameStatus = Const.IN_PLAY;
+      }
   }
 
 
