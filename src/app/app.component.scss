@@ -30,6 +30,14 @@ h4 {
     text-align: center;
     padding: 4px;
     border-radius: 8px;
+    animation:blinkingText 0.8s infinite;
+}
+@keyframes blinkingText{
+    0%{     color: #fff;    }
+    49%{    color: transparent; }
+    50%{    color: transparent; }
+    99%{    color:transparent;  }
+    100%{   color: #fff;    }
 }
 
 .col1 {
