@@ -1,6 +1,7 @@
 import { Const } from './const';
 import { Component, ViewEncapsulation } from '@angular/core';
 import Move from './components/move';
+import { THIS_EXPR } from '@angular/compiler/src/output/output_ast';
 
 @Component({
   selector: 'app-root',
@@ -13,6 +14,16 @@ export class AppComponent {
   board: Array<any> = [];
   cols: Array<string> = Const.COL_NAMES;
   currentPlayer = 'b';
+  totalPlayerScore = 2;
+  totalPlayerWins = 0;
+  totalPlayerLosses = 0;
+  totalPlayerTies = 0;
+  totalComputerScore = 2;
+  totalComputerWins = 0;
+  totalComputerLosses = 0;
+  totalComputerTies = 0;
+  gameStatus = Const.IN_PLAY;
+  playAgainShowing = false;
 
   constructor() {
     // Initialize the board
@@ -41,52 +52,9 @@ export class AppComponent {
       ) {
         square.status = 'black';
       }
-
-      // if (
-      //   (square.col === 'C' && square.row === 5)
-      //   || (square.col === 'E' && square.row === 5)) {
-      //   square.status = 'black';
-      // }
-
-      // if (square.col === 'D' && square.row === 6 ||
-      //   (square.col === 'E' && square.row === 6) ||
-      //   (square.col === 'F' && square.row === 6)) {
-      //   square.status = 'white';
-      // }
-
-      // if (square.col === 'C' && square.row === 4) {
-      //   square.status = 'black';
-      // }
-
-      // if (square.col === 'B' && square.row === 5) {
-      //   square.status = 'black';
-      // }
-
-      // if (square.col === 'D' && square.row === 7) {
-      //   square.status = 'white';
-      // }
-
-      // if (square.col === 'B' && square.row === 2) {
-      //   square.status = 'white';
-      // }
-
-      // if (square.col === 'F' && square.row === 6) {
-      //   square.status = 'black';
-      // }
-
-      // if (square.col === 'E' && square.row === 2) {
-      //   square.status = 'black';
-      // }
-
-      // if (square.col === 'B' && square.row === 3) {
-      //   square.status = 'black';
-      // }
-
-      // if (square.col === 'C' && square.row === 3) {
-      //   square.status = 'black';
-      // }
     });
 
+    this.calculateScores();
     this.calculateValidMoves();
   }
 
@@ -342,13 +310,31 @@ export class AppComponent {
     this.currentPlayer = this.getOppositePlayer().charAt(0);
     this.calculateValidMoves();
 
+    this.calculateScores();
+
     this.executeComputersTurn();
+  }
+
+  private calculateScores() {
+
+    const numPlayersStonesOnBoard = this.board.filter((stone) => {
+      return stone.status === 'black' ? true : false;
+    });
+
+    this.totalPlayerScore = numPlayersStonesOnBoard.length;
+
+    const numComputersStonesOnBoard = this.board.filter((stone) => {
+      return stone.status === 'white' ? true : false;
+    });
+
+    this.totalComputerScore = numComputersStonesOnBoard.length;
+
   }
 
   private executeComputersTurn() {
 
     const listOfValidMoves = this.board.filter(item => {
-      return item.status === 'valid' ? true : false;
+      return item.status !== undefined && item.status === 'valid' ? true : false;
     });
 
     // Small delay before display computer move
@@ -364,14 +350,63 @@ export class AppComponent {
       this.scanForDiagonalLinesTRtoBL(true, stone);
       this.scanForDiagonalLinesTLtoBR(true, stone);
 
-      stone.status = 'white';
+      if (stone !== undefined) {
+        stone.status = 'white';
+      }
 
       this.clearValidMarkers();
       this.currentPlayer = this.getOppositePlayer().charAt(0);
       this.calculateValidMoves();
+
+      this.calculateScores();
+      this.validateGameStatus();
+      this.calculateValidMoves();
+
+      if (this.gameStatus === Const.NO_MOVES) {
+          this.gameStatus = Const.GAME_OVER;
+      }
+
+      if (this.gameStatus === Const.GAME_OVER) {
+        this.addToWinLossTotals();
+        this.playAgainShowing = true;
+      }
+
     }, 1140);
 
   }
+
+  private validateGameStatus() {
+    const listOfValidMoves = this.board.filter(item => {
+        return item !== undefined && item.status !== undefined && item.status === 'valid' ? true : false;
+    });
+
+    if (listOfValidMoves.length === 0) {
+        this.gameStatus = Const.NO_MOVES;
+    }
+  }
+
+  private addToWinLossTotals() {
+      if (this.totalComputerScore > this.totalPlayerScore) {
+        this.totalComputerWins++;
+        this.totalPlayerLosses++;
+      } else if (this.totalComputerScore < this.totalPlayerScore) {
+        this.totalPlayerWins++;
+        this.totalComputerLosses++;
+      } else {
+        this.totalComputerTies++;
+        this.totalPlayerTies++;
+      }
+  }
+
+  public playAgainClick() {
+    this.board = [];
+    this.playAgainShowing = false;
+    this.initBoard();
+    this.totalPlayerScore = 2;
+    this.totalComputerScore = 2;
+    this.gameStatus = Const.IN_PLAY;
+  }
+
 
   ////////////////////////////////////////////////////////////
   // Directional scanning

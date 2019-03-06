@@ -1,5 +1,9 @@
 export class Const {
 
+    public static NO_MOVES = 'NO_MOVES';
+    public static IN_PLAY = 'IN_PLAY';
+    public static GAME_OVER = 'GAME_OVER';
+
     public static COL_NAMES = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H'];
 
     public static DIAG_TL_BR = [

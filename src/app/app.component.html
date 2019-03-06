@@ -1,24 +1,49 @@
 <div class="content">
     <div class="title">Bruce's Reversi</div>
     <div class="col2">
+      <h1>Scores</h1>
+      <div class="humanPlayerStats">
+          <img class="infoBlackChip" src="../assets/black_chip.png">
+          <h2>Human</h2>
+          <h4>Stones</h4>
+          <h2 style="position: abasolute; margin-top: -12px">{{ totalPlayerScore }}</h2>
+          <h4>Wins</h4>
+          <h2 style="position: abasolute; margin-top: -12px">{{ totalPlayerWins }}</h2>
+          <h4>Losses</h4>
+          <h2 style="position: abasolute; margin-top: -12px">{{ totalPlayerLosses }}</h2>
+          <h4>Ties</h4>
+          <h2 style="position: abasolute; margin-top: -12px">{{ totalPlayerTies }}</h2>
+      </div>
+      <div class="computerPlayerStats">
+          <img class="infoBlackChip" src="../assets/white_chip.png">
+          <h2>Computer</h2>
+          <h4>Stones</h4>
+          <h2 style="position: abasolute; margin-top: -12px">{{ totalComputerScore }}</h2>
+          <h4>Wins</h4>
+          <h2 style="position: abasolute; margin-top: -12px">{{ totalComputerWins }}</h2>
+          <h4>Losses</h4>
+          <h2 style="position: abasolute; margin-top: -12px">{{ totalComputerLosses }}</h2>
+          <h4>Ties</h4>
+          <h2 style="position: abasolute; margin-top: -12px">{{ totalComputerTies }}</h2>
+      </div>
+      <div>
+          <h2>Game Status</h2>
+          <h4 style="margin-top: -10px; font-size: 2em">{{gameStatus.replace('_', ' ')}}</h4>
+          <div *ngIf="playAgainShowing === true" class="playAgainBTN" (click)="playAgainClick()"><b><p style="margin-top: 11px;">Play Again</p></b></div>
+      </div>
+    </div>
+    <div class="col1">
         <div class="board">
             <div class="row" *ngFor="let z of cols; let i = index">
               <div class="cols" *ngFor="let col of cols">
                 <div class="intersect" [attr.id]="col + (i +1)" (click)="squareClicked(col,i+1)">
                   <div class="stoneWhite" *ngIf="getStoneColor(col,i+1) === 'white' ? true : false"></div>
                   <div class="stoneBlack" *ngIf="getStoneColor(col,i+1) === 'black' ? true : false"></div>
-                  <div class="stoneMarker" (click)="validMarkerClicked(col,i+1)" [ngStyle]="{ opacity: currentPlayer === 'w' ? 0 : 0.6 }" *ngIf="getStoneColor(col,i+1) === 'valid' ? true : false"></div>
+                  <div class="stoneMarker" (click)="validMarkerClicked(col,i+1)" [ngStyle]="{ opacity: currentPlayer === 'w' ? 0 : 0.3 }" *ngIf="getStoneColor(col,i+1) === 'valid' ? true : false"></div>
                 </div>
               </div>
             </div>
         </div>
-    </div>
-    <div class="col1">
-
-      </div>
-    <!-- <div class="col3">
-    
-      </div> -->
-   
+    </div>   
   </div>
   
