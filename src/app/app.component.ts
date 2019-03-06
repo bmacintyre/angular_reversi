@@ -1,9 +1,7 @@
 import { Const } from './const';
 import { Component, ViewEncapsulation } from '@angular/core';
-import { THIS_EXPR } from '@angular/compiler/src/output/output_ast';
 import { Store } from '@ngrx/store';
 import { PlayerStonesAction, PlayerLossesAction, PlayerWinsAction, PlayerTieAction } from './store/reducers/player.reducer';
-import { EventManager } from '@angular/platform-browser';
 import { ComputerStonesAction, ComputerLossesAction, ComputerWinsAction, ComputerTieAction } from './store/reducers/computer.reducer';
 
 @Component({
@@ -34,12 +32,6 @@ export class AppComponent {
 
   }
 
-  public resetBoard($event) {
-    this.board = [];
-    this.initBoard();
-    this.gameStatus = Const.IN_PLAY;
-  }
-
   public initBoard() {
     this.cols.map(element => {
       for (let i = 1; i < 9; i++) {
@@ -65,21 +57,19 @@ export class AppComponent {
     });
 
     this.calculateScores();
-    this.calculateValidMoves();
+    this.calculateAllValidMoves();
   }
 
-  public setStone(col: string, row: string, color: string) {
-    this.board.map(square => {
-      if (
-        square.col === col &&
-        String(square.row) === row &&
-        square.status === 'empty'
-      ) {
-        square.status = color;
-      }
-    });
+  public resetBoard($event) {
+    this.board = [];
+    this.initBoard();
+    this.gameStatus = Const.IN_PLAY;
   }
 
+  ////////////////////////////////////////////
+  // Helper Utils
+
+  /// Used in template
   public getStoneColor(col: string, row: number): any {
     const item = this.board.filter(cell => {
       if (String(col + row) === String(cell.col + cell.row)) {
@@ -94,14 +84,6 @@ export class AppComponent {
     return item[0].status;
   }
 
-  public calculateValidMoves() {
-
-    this.scanForVerticalLines();
-    this.scanForHorizontalLines();
-    this.scanForDiagonalLinesTRtoBL();
-    this.scanForDiagonalLinesTLtoBR();
-  }
-
   public clearValidMarkers() {
     this.board.map(item => {
         if (item.status === 'valid') {
@@ -111,12 +93,55 @@ export class AppComponent {
     });
   }
 
-  public getInActivePlayerColour() {
+  private getOppositePlayer(): string {
     if (this.currentPlayer === 'w') {
-      return 'b';
+      return 'black';
     } else {
-      return 'w';
+      return 'white';
     }
+  }
+
+  private inArray(value: any, list: any[]): boolean {
+
+    let found = false;
+    // tslint:disable-next-line:prefer-for-of
+    for (let i = 0; i < list.length; i++) {
+      const element = list[i];
+      if (element.col === value.col && element.row === value.row) {
+        found = true;
+      }
+    }
+
+    return found;
+  }
+
+  private getStoneByPosition(col, row): any {
+    const stone = this.board.filter(val => {
+      return val.col === col && val.row === row ? true : false;
+    });
+
+    return stone[0];
+  }
+
+  private validateGameStatus() {
+    const listOfValidMoves = this.board.filter(item => {
+        return item !== undefined && item.status !== undefined && item.status === 'valid' ? true : false;
+    });
+
+    if (listOfValidMoves.length === 0) {
+        this.gameStatus = Const.NO_MOVES;
+    }
+  }
+
+  //////////////////////////////////////////
+  // Game Calculations
+
+  public calculateAllValidMoves() {
+
+    this.scanForVerticalLines();
+    this.scanForHorizontalLines();
+    this.scanForDiagonalLinesTRtoBL();
+    this.scanForDiagonalLinesTLtoBR();
   }
 
   private sequenceIndentifier(item: any, square: any, arrayToFill: any[]) {
@@ -147,52 +172,37 @@ export class AppComponent {
       if (this.currentPlayer === 'w') {
         keySeq = 'w,b';
       }
-      let temp = [];
-      let pastMinReq = false;
-      for (let z = 0; z < sequences.length; z++) {
-        if (sequences[z].status === 'e' || sequences[z].status === 'v') {
-          if (pastMinReq) {
 
-            const stone = this.getStoneByPosition(sequences[z].item.col, sequences[z].item.row);
-            if (sequences[z - 1] !== undefined &&  sequences[z - 1].status === (this.currentPlayer === 'w' ? 'white' : 'black')) {
-              continue;
-            }
-            stone.status = 'valid';
+      this.walkSequenceAndPlaceValidMarkers(sequences, keySeq);
 
-            pastMinReq = false;
+      sequences = sequences.reverse();
+      this.walkSequenceAndPlaceValidMarkers(sequences, keySeq);
+    }
+  }
+
+  private walkSequenceAndPlaceValidMarkers(sequences: any[], keySeq: string) {
+    let pastMinReq = false;
+    let temp = [];
+    for (let z = 0; z < sequences.length; z++) {
+      if (sequences[z].status === 'e' || sequences[z].status === 'v') {
+        if (pastMinReq) {
+          const stone = this.getStoneByPosition(sequences[z].item.col, sequences[z].item.row);
+          if (sequences[z + 1] !== undefined && sequences[z + 1].status === (this.currentPlayer === 'w' ? 'white' : 'black')) {
+            temp = [];
+            continue;
           }
-          temp = [];
-        } else {
-          temp.push(sequences[z].status);
-          const flat = temp.toString();
-          if (flat.indexOf(keySeq) > -1) {
-            pastMinReq = true;
-          }
+
+          stone.status = 'valid';
+          pastMinReq = false;
         }
-      }
+        temp = [];
+      } else {
 
-      pastMinReq = false;
-      temp = [];
+        temp.push(sequences[z].status);
 
-      for (let q = sequences.length - 1; q > -1; q--) {
-        if (sequences[q].status === 'e' || sequences[q].status === 'v') {
-          if (pastMinReq) {
-            const stone = this.getStoneByPosition(sequences[q].item.col, sequences[q].item.row);
-            if (sequences[q + 1] !== undefined && sequences[q + 1].status === (this.currentPlayer === 'w' ? 'white' : 'black')) {
-              continue;
-            }
-            stone.status = 'valid';
-            pastMinReq = false;
-          }
-          temp = [];
-        } else {
-
-          temp.push(sequences[q].status);
-
-          const flat = temp.toString();
-          if (flat.indexOf(keySeq) > -1) {
-            pastMinReq = true;
-          }
+        const flat = temp.toString();
+        if (flat.indexOf(keySeq) > -1) {
+          pastMinReq = true;
         }
       }
     }
@@ -227,36 +237,6 @@ export class AppComponent {
           }
       }
     }
-  }
-
-  private getOppositePlayer(): string {
-    if (this.currentPlayer === 'w') {
-      return 'black';
-    } else {
-      return 'white';
-    }
-  }
-
-  private inArray(value: any, list: any[]): boolean {
-
-    let found = false;
-    // tslint:disable-next-line:prefer-for-of
-    for (let i = 0; i < list.length; i++) {
-      const element = list[i];
-      if (element.col === value.col && element.row === value.row) {
-        found = true;
-      }
-    }
-
-    return found;
-  }
-
-  private getStoneByPosition(col, row): any {
-    const stone = this.board.filter(val => {
-      return val.col === col && val.row === row ? true : false;
-    });
-
-    return stone[0];
   }
 
   public executeLineOperation(stone: any, validate: boolean, arrayToSearch: any[], sequence: any[], checkReverseAlso = false): boolean {
@@ -296,38 +276,6 @@ export class AppComponent {
     return response;
   }
 
-  public validMarkerClicked(col: any, row: number) {
-
-    if (this.currentPlayer === 'w') {
-      return;
-    }
-
-    const stone = this.getStoneByPosition(col, row);
-
-    this.scanForVerticalLines(true, stone);
-    this.scanForHorizontalLines(true, stone);
-    this.scanForDiagonalLinesTRtoBL(true, stone);
-    this.scanForDiagonalLinesTLtoBR(true, stone);
-
-    stone.status = this.currentPlayer === 'w' ? 'white' : 'black';
-
-    this.clearValidMarkers();
-    this.currentPlayer = this.getOppositePlayer().charAt(0);
-    this.calculateValidMoves();
-
-    this.calculateScores();
-
-    this.executeComputersTurn();
-
-    const list = this.board.filter(item => {
-        return (item.status === 'valid' || item.status === 'empty') ? true : false;
-    });
-
-    if (list.length === 0) {
-      this.gameStatus = Const.GAME_OVER;
-    }
-  }
-
   private calculateScores() {
 
     const numPlayersStonesOnBoard = this.board.filter((stone) => {
@@ -345,6 +293,31 @@ export class AppComponent {
 
   }
 
+  private addToWinLossTotals() {
+      if (this.totalComputerScore > this.totalPlayerScore) {
+        this.totalComputerWins++;
+        this.totalPlayerLosses++;
+        this.store.dispatch(new PlayerLossesAction(this.totalPlayerLosses));
+        this.store.dispatch(new ComputerWinsAction(this.totalComputerWins));
+
+      } else if (this.totalComputerScore < this.totalPlayerScore) {
+        this.totalPlayerWins++;
+        this.totalComputerLosses++;
+        this.store.dispatch(new PlayerWinsAction(this.totalPlayerWins));
+        this.store.dispatch(new ComputerLossesAction(this.totalComputerLosses));
+
+      } else {
+        this.totalComputerTies++;
+        this.totalPlayerTies++;
+        this.store.dispatch(new PlayerTieAction(this.totalPlayerTies));
+        this.store.dispatch(new ComputerTieAction(this.totalComputerTies));
+
+      }
+  }
+
+  /////////////////////////////////////////////////////////////////////////
+  // I know AI wasn't a requirement by it seems such a simple enhancement
+  // given Im just picking randomly from a of valid markers
   private executeComputersTurn() {
 
     const listOfValidMoves = this.board.filter(item => {
@@ -370,11 +343,11 @@ export class AppComponent {
 
       this.clearValidMarkers();
       this.currentPlayer = this.getOppositePlayer().charAt(0);
-      this.calculateValidMoves();
+      this.calculateAllValidMoves();
 
       this.calculateScores();
       this.validateGameStatus();
-      this.calculateValidMoves();
+      this.calculateAllValidMoves();
 
       if (this.gameStatus === Const.NO_MOVES) {
           this.gameStatus = Const.GAME_OVER;
@@ -389,38 +362,40 @@ export class AppComponent {
 
   }
 
-  private validateGameStatus() {
-    const listOfValidMoves = this.board.filter(item => {
-        return item !== undefined && item.status !== undefined && item.status === 'valid' ? true : false;
+  ////////////////////////////////////
+  // User driven events
+
+  public validMarkerClicked(col: any, row: number) {
+
+    if (this.currentPlayer === 'w') {
+      return;
+    }
+
+    const stone = this.getStoneByPosition(col, row);
+
+    this.scanForVerticalLines(true, stone);
+    this.scanForHorizontalLines(true, stone);
+    this.scanForDiagonalLinesTRtoBL(true, stone);
+    this.scanForDiagonalLinesTLtoBR(true, stone);
+
+    stone.status = this.currentPlayer === 'w' ? 'white' : 'black';
+
+    this.clearValidMarkers();
+    this.currentPlayer = this.getOppositePlayer().charAt(0);
+    this.calculateAllValidMoves();
+
+    this.calculateScores();
+
+    this.executeComputersTurn();
+
+    const list = this.board.filter(item => {
+        return (item.status === 'valid' || item.status === 'empty') ? true : false;
     });
 
-    if (listOfValidMoves.length === 0) {
-        this.gameStatus = Const.NO_MOVES;
+    if (list.length === 0) {
+      this.gameStatus = Const.GAME_OVER;
     }
   }
-
-  private addToWinLossTotals() {
-      if (this.totalComputerScore > this.totalPlayerScore) {
-        this.totalComputerWins++;
-        this.totalPlayerLosses++;
-        this.store.dispatch(new PlayerLossesAction(this.totalPlayerLosses));
-        this.store.dispatch(new ComputerWinsAction(this.totalComputerWins));
-
-      } else if (this.totalComputerScore < this.totalPlayerScore) {
-        this.totalPlayerWins++;
-        this.totalComputerLosses++;
-        this.store.dispatch(new PlayerWinsAction(this.totalPlayerWins));
-        this.store.dispatch(new ComputerLossesAction(this.totalComputerLosses));
-
-      } else {
-        this.totalComputerTies++;
-        this.totalPlayerTies++;
-        this.store.dispatch(new PlayerTieAction(this.totalPlayerTies));
-        this.store.dispatch(new ComputerTieAction(this.totalComputerTies));
-
-      }
-  }
-
 
   ////////////////////////////////////////////////////////////
   // Directional scanning
