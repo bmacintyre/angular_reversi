@@ -37,6 +37,7 @@ export class AppComponent {
   public resetBoard($event) {
     this.board = [];
     this.initBoard();
+    this.gameStatus = Const.IN_PLAY;
   }
 
   public initBoard() {
@@ -65,11 +66,6 @@ export class AppComponent {
 
     this.calculateScores();
     this.calculateValidMoves();
-  }
-
-  public squareClicked(col: string, row: string) {
-    // console.log(col + row);
-    this.setStone(col, row, 'black');
   }
 
   public setStone(col: string, row: string, color: string) {
@@ -322,6 +318,14 @@ export class AppComponent {
     this.calculateScores();
 
     this.executeComputersTurn();
+
+    const list = this.board.filter(item => {
+        return (item.status === 'valid' || item.status === 'empty') ? true : false;
+    });
+
+    if (list.length === 0) {
+      this.gameStatus = Const.GAME_OVER;
+    }
   }
 
   private calculateScores() {

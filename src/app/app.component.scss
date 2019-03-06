@@ -30,10 +30,10 @@ h4 {
     text-align: center;
     padding: 4px;
     border-radius: 8px;
-    animation:blinkingText 2s infinite;
+    animation:blinkingText 1s infinite;
 }
 @keyframes blinkingText{
-    0%{     color: #fff;    }
+    25%{     color: #fff;    }
     49%{    color: transparent; }
     50%{    color: transparent; }
     99%{    color:transparent;  }

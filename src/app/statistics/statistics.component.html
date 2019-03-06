@@ -27,6 +27,6 @@
   <div>
       <h3 style="margin-top: 5px;">Game Status</h3>
       <h4 style="margin-top: 5px; font-size: 2em">{{gameStatus.replace('_', ' ')}}</h4>
-      <div *ngIf="playAgainShowing === true" class="playAgainBTN" (click)="playAgainClick()"><b><p style="margin-top: 1px;">Play Again</p></b></div>
+      <div *ngIf="gameStatus === 'GAME_OVER'" class="playAgainBTN" (click)="playAgainClick()"><b><p style="margin-top: 1px;">Play Again</p></b></div>
   </div>
 </div>
