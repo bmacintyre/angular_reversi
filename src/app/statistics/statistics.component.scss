@@ -1,0 +1,41 @@
+h4 {
+    font-size: 120%;
+}
+
+h3 {
+    font-size: 140%;
+}
+
+.playerStats {
+    overflow: hidden;
+    display: inline-block;
+    background: url('../../assets/green_felt.jpg');
+    background-repeat: repeat;
+    padding: 14px;
+    min-width: 200px;
+    height: 330px;
+    border-width: 2px;
+    border-color: rgb(158, 90, 0);
+    border-style: solid;
+    margin-right: 40px;
+}
+
+.infoChip {
+    width: 50px;
+    height: auto;
+    float: right;
+}
+
+
+.statsArea {
+    position: fixed;
+    left: 50vw;
+    margin-top: 21px;
+    padding: 0;
+    width: 20vw;
+    min-width: 500px;
+    height: 50vh;
+    z-index: 1000;
+    color: white;
+    font-family: Arial, Helvetica, sans-serif;
+}

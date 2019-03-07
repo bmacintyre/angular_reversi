@@ -40,29 +40,17 @@ h4 {
     100%{   color: #fff;    }
 }
 
-.col1 {
-   // display: inline-block;
+.main {
     margin-top: 0px;
     margin-left: 6.7vw;
-    width: 25vw;  
+    width: 21vw;  
     height: 50vh;
 }
 
-.col2 {
-    position: fixed;
-    right: 10vw;
-    margin-top: 21px;
-    padding: 0;
-    width: 20vw;
-    min-width: 40vw;
-    height: 50vh;
-    z-index: 1000;
-    color: white;
-    font-family: Arial, Helvetica, sans-serif;
-}
 
 .cols {
     width: 4vw;
+    min-width: 50px;
     height: auto;
     float: left;
     padding: 0px;
@@ -73,26 +61,36 @@ h4 {
 .board {
     position: relative;
     height: auto;
-    width: 36.1vw;
+    width: 32.2vw;
     height: auto;
+    min-width: 400px;
+    min-height: 400px;
     border-width: 2px;
-    margin-left: auto;
+    margin-left: -15px;
+    padding-left: 15px;
     margin-right: auto;
     margin-top: 30px;
+    border-width: 2px;
+    border-color: rgb(158, 90, 0);
+    border-style: solid;
 }
 
 .title {
     width: 340px;
     height: 10px;
-    text-align: center;
     color: white;   
     font-size: 3em;
     font-weight: bold;
-    margin-left: 13vw;
+    margin-left: 6.7vw;
     margin-right: auto;
     margin-top: 6vh;
+    padding: 0;
     padding-bottom: 50px;
-    text-align: center;
+    text-align: left;
+}
+
+.offset {
+    margin-left: -15px;
 }
 
 .stoneMarker {
@@ -103,39 +101,6 @@ h4 {
     margin-top: 15%;
     margin-left: 15%;
     padding: 0;
-}
-
-.humanPlayerStats {
-    overflow: hidden;
-    display: inline-block;
-    background: url('../assets/green_felt.jpg');
-    background-repeat: repeat;
-    padding: 14px;
-    min-width: 240px;
-    height: 40vh;
-    border-width: 2px;
-    border-color: rgb(158, 90, 0);
-    border-style: solid;
-}
-
-.computerPlayerStats {
-    overflow: hidden;
-    display: inline-block;
-    margin-left: 3vw;
-    background: url('../assets/green_felt.jpg');
-    background-repeat: repeat;
-    padding: 14px;
-    min-width: 240px;
-    height: 40vh;
-    border-width: 2px;
-    border-color: rgb(158, 90, 0);
-    border-style: solid;
-}
-
-.infoBlackChip {
-    width: 50px;
-    height: auto;
-    float: right;
 }
 
 .stoneBlack {
@@ -161,6 +126,8 @@ h4 {
 .intersect {
     width: 4vw;
     height: 4vw;
+    min-height: 50px;
+    min-width: 50px;
     padding: 2px;
     margin: 0;
     margin-right: 2vw;

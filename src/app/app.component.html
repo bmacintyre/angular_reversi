@@ -1,11 +1,11 @@
 <div class="content">
-    <div class="title">Reversi</div>
+    <div class="title"><div class="offset">Reversi</div></div>
     <app-statistics (resetEvent)="resetBoard($event)" [(gameStatus)]="gameStatus" [(playAgainShowing)]="playAgainShowing"></app-statistics>
-    <div class="col1">
+    <div class="main">
         <div class="board">
             <div class="row" *ngFor="let z of cols; let i = index">
               <div class="cols" *ngFor="let col of cols">
-                <div class="intersect" [attr.id]="col + (i +1)" (click)="squareClicked(col,i+1)">
+                <div class="intersect" [attr.id]="col + (i +1)" (click)="validMarkerClicked(col,i+1)">
                   <div class="stoneWhite" *ngIf="getStoneColor(col,i+1) === 'white' ? true : false"></div>
                   <div class="stoneBlack" *ngIf="getStoneColor(col,i+1) === 'black' ? true : false"></div>
                   <div class="stoneMarker" (click)="validMarkerClicked(col,i+1)" [ngStyle]="{ opacity: currentPlayer === 'w' ? 0 : 0.3 }" *ngIf="getStoneColor(col,i+1) === 'valid' ? true : false"></div>
